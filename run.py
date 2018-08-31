@@ -34,6 +34,8 @@ if groups_id is not None:
 else:
   adata = anndata.AnnData(counts.values)
 
+checkpoints["method_afterpreproc"] = time.time()
+
 #   ____________________________________________________________________________
 #   Basic preprocessing                                                     ####
 
