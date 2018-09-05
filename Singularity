@@ -10,16 +10,15 @@ From: dynverse/dynwrap:py3.6
 %labels
     version 0.1.3
 
+%files
+    . /code
+
 %post
-    chmod -R a+r /code
-    chmod a+x /code
-    pip install python-igraph louvain # igraph and louvain do not get installed by scanpy
+    chmod -R 755 '/code'
+    pip install python-igraph louvain 
     pip install feather-format
     pip install scanpy
     pip install fa2
-
-%files
-    . /code
 
 %runscript
     exec python /code/run.py
