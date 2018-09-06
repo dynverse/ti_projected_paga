@@ -1,5 +1,6 @@
 id: projected_paga
 docker_repository: dynverse/ti_projected_paga
+singularity_collection: 1567
 container_url: https://github.com/dynverse/ti_projected_paga
 name: Projected PAGA
 type: algorithm_test
