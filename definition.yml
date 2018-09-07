@@ -52,11 +52,13 @@ output:
   - timings
 wrapper_type: dimred_projection
 trajectory_types:
+- cycle
 - linear
 - bifurcation
 - convergence
 - multifurcation
-- binary_tree
 - tree
-- disconnected_tree
+- acyclic_graph
+- graph
+- disconnected_graph
 topology_inference: free
