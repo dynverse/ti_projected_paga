@@ -8,7 +8,7 @@ Bootstrap: shub
 From: dynverse/dynwrap:py3.6
 
 %labels
-    version 0.1.11
+    version 0.1.12
 
 %files
     . /code
@@ -16,7 +16,6 @@ From: dynverse/dynwrap:py3.6
 %post
     chmod -R 755 '/code'
     pip install python-igraph louvain 
-    pip install feather-format
     pip install scanpy
     pip install fa2
 

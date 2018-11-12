@@ -89,11 +89,11 @@ checkpoints["method_aftermethod"] = time.time()
 cell_ids = pd.DataFrame({
   "cell_ids": counts.index
 })
-cell_ids.to_feather("/ti/output/cell_ids.feather")
+cell_ids.to_csv("/ti/output/cell_ids.csv", index=False)
 
 # grouping
 grouping = pd.DataFrame({"cell_id": counts.index, "group_id": adata.obs.louvain})
-grouping.reset_index(drop=True).to_feather("/ti/output/grouping.feather")
+grouping.reset_index(drop=True).to_csv("/ti/output/grouping.csv", index=False)
 
 # milestone network
 milestone_network = pd.DataFrame(
@@ -104,21 +104,21 @@ milestone_network = pd.DataFrame(
 milestone_network.columns = ["from", "to", "length"]
 milestone_network = milestone_network.query("length >= " + str(params["connectivity_cutoff"])).reset_index(drop=True)
 milestone_network["directed"] = False
-milestone_network.to_feather("/ti/output/milestone_network.feather")
+milestone_network.to_csv("/ti/output/milestone_network.csv", index=False)
 
 # dimred
 dimred = pd.DataFrame([x for x in adata.obsm['X_umap'].T]).T
 dimred.columns = ["comp_" + str(i) for i in range(dimred.shape[1])]
 dimred["cell_id"] = counts.index
-dimred.reset_index(drop=True).to_feather("/ti/output/dimred.feather")
+dimred.reset_index(drop=True).to_csv("/ti/output/dimred.csv", index=False)
 
 # dimred milestones
 dimred["milestone_id"] = adata.obs.louvain.tolist()
 dimred_milestones = dimred.groupby("milestone_id").mean().reset_index()
-dimred_milestones.to_feather("/ti/output/dimred_milestones.feather")
+dimred_milestones.to_csv("/ti/output/dimred_milestones.csv", index=False)
 
 # timings
 timings = pd.Series(checkpoints)
 timings.index.name = "name"
 timings.name = "timings"
-timings.reset_index().to_feather("/ti/output/timings.feather")
+timings.reset_index().to_csv("/ti/output/timings.csv", index=False)

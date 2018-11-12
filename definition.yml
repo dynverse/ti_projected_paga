@@ -52,7 +52,7 @@ input:
   - counts
   optional: groups_id
 output:
-  format: feather
+  format: text
   outputs:
   - dimred_projection
   - dimred
