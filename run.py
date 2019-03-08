@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+
 # avoid errors due to no $DISPLAY environment variable available when running sc.pl.paga
 import matplotlib
 matplotlib.use('Agg')
@@ -13,13 +15,19 @@ import anndata
 import time
 checkpoints = {}
 
+import dynclipy
+
 #   ____________________________________________________________________________
 #   Load data                                                               ####
-data = h5py.File("/ti/input/data.h5", "r")
-counts = pd.DataFrame(data['counts'][:].T, index = data['counts_rows'][:].astype(np.str), columns = data['counts_cols'][:].astype(np.str))
-data.close()
+task = dynclipy.main()
+task = dynclipy.main(
+  ["--dataset", "/code/example.h5", "--output", "/mnt/output"],
+  "/code/definition.yml"
+)
 
-params = json.load(open("/ti/input/params.json", "r"))
+counts = task["counts"]
+
+params = task["params"]
 
 if "groups_id" in data:
   groups_id = data['groups_id']
@@ -28,14 +36,12 @@ else:
 
 # create dataset
 if groups_id is not None:
-  obs = groups_id
-  obs["louvain"] = obs.group_id.astyp("category")
+  obs = pd.DataFrame(groups_id)
+  obs["louvain"] = obs["group_id"].astype("category")
   adata = anndata.AnnData(counts.values, obs)
 else:
   adata = anndata.AnnData(counts.values)
-
-checkpoints["method_afterpreproc"] = time.time()
-
+  
 #   ____________________________________________________________________________
 #   Basic preprocessing                                                     ####
 
@@ -85,15 +91,9 @@ checkpoints["method_aftermethod"] = time.time()
 
 #   ____________________________________________________________________________
 #   Process & save output                                                   ####
-# cell ids
-cell_ids = pd.DataFrame({
-  "cell_ids": counts.index
-})
-cell_ids.to_csv("/ti/output/cell_ids.csv", index=False)
 
 # grouping
 grouping = pd.DataFrame({"cell_id": counts.index, "group_id": adata.obs.louvain})
-grouping.reset_index(drop=True).to_csv("/ti/output/grouping.csv", index=False)
 
 # milestone network
 milestone_network = pd.DataFrame(
@@ -104,21 +104,28 @@ milestone_network = pd.DataFrame(
 milestone_network.columns = ["from", "to", "length"]
 milestone_network = milestone_network.query("length >= " + str(params["connectivity_cutoff"])).reset_index(drop=True)
 milestone_network["directed"] = False
-milestone_network.to_csv("/ti/output/milestone_network.csv", index=False)
 
 # dimred
 dimred = pd.DataFrame([x for x in adata.obsm['X_umap'].T]).T
 dimred.columns = ["comp_" + str(i) for i in range(dimred.shape[1])]
 dimred["cell_id"] = counts.index
-dimred.reset_index(drop=True).to_csv("/ti/output/dimred.csv", index=False)
 
 # dimred milestones
-dimred["milestone_id"] = adata.obs.louvain.tolist()
-dimred_milestones = dimred.groupby("milestone_id").mean().reset_index()
-dimred_milestones.to_csv("/ti/output/dimred_milestones.csv", index=False)
+dimred_milestones = dimred.copy()
+dimred_milestones["milestone_id"] = adata.obs.louvain.tolist()
+dimred_milestones = dimred_milestones.groupby("milestone_id").mean().reset_index()
 
 # timings
 timings = pd.Series(checkpoints)
 timings.index.name = "name"
 timings.name = "timings"
-timings.reset_index().to_csv("/ti/output/timings.csv", index=False)
+
+# save
+dataset = dynclipy.wrap_data(cell_ids = counts.index)
+dataset.add_dimred_projection(
+  grouping = grouping, 
+  milestone_network = milestone_network,
+  dimred = dimred,
+  dimred_milestones = dimred_milestones
+)
+dataset.write_output(task["output"])

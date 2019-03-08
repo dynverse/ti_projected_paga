@@ -1,67 +1,89 @@
-id: projected_paga
-docker_repository: dynverse/ti_projected_paga
-singularity_collection: 1567
-container_url: https://github.com/dynverse/ti_projected_paga
-name: Projected PAGA
-source: adaptation
-implemenntation_id: paga
-platform: Python
+method:
+  id: paga
+  name: Projected PAGA
+  tool_id: projected_paga
+  source: adaptation
+  platform: Python
+  url: https://github.com/theislab/graph_abstraction
+
+
+
+wrapper:
+  type: branch_trajectory
+  topology_inference: free
+  trajectory_types:
+  - cycle
+  - linear
+  - bifurcation
+  - convergence
+  - multifurcation
+  - tree
+  - acyclic_graph
+  - graph
+  - disconnected_graph
+  input_required:
+  - counts
+  input_optional:
+  - groups_id
+
+
+container:
+  docker: dynverse/ti_projected_paga
+  url: https://github.com/dynverse/ti_projected_paga
+
+manuscript:
+  doi: 10.1101/208819
+  google_scholar_cluster_id: '10470081259069082868'
+  preprint_date: '2017-10-27'
+
+
 parameters:
-  n_neighbors:
-    description: Number of neighbours for knn
-    type: integer
+- id: n_neighbors
+  description: Number of neighbours for knn
+  type: integer
+  default: 15
+  distribution:
+    type: uniform
     lower: 1
     upper: 100
-    default: 15
-  n_comps:
-    description: Number of principal components
-    type: integer
+- id: n_comps
+  description: Number of principal components
+  type: integer
+  default: 50
+  distribution:
+    type: uniform
     lower: 0
     upper: 100
-    default: 50
-  n_dcs:
-    description: Number of diffusion components for denoising graph, 0 means no denoising.
-    type: integer
+- id: n_dcs
+  description: Number of diffusion components for denoising graph, 0 means no denoising.
+  type: integer
+  default: 15
+  distribution:
+    type: uniform
     lower: 0
     upper: 40
-    default: 15
-  resolution:
-    description: Resolution of louvain clustering, which determines the granularity
-      of the clustering. Higher values will result in more clusters.
-    type: numeric
+- id: resolution
+  description: Resolution of louvain clustering, which determines the granularity
+    of the clustering. Higher values will result in more clusters.
+  type: numeric
+  default: 1
+  distribution:
+    type: uniform
     lower: 0.1
     upper: 10
-    default: 1
-  embedding_type:
-    description: Either 'umap' (scales very well, recommended for very large datasets)
-      or 'fa' (ForceAtlas2, often a bit more intuitive for small datasets).
-    type: discrete
-    default: fa
-    values:
-    - umap
-    - fa
-  connectivity_cutoff:
-    description: Cutoff for the connectivity matrix
-    type: numeric
+- id: embedding_type
+  description: Either 'umap' (scales very well, recommended for very large datasets)
+    or 'fa' (ForceAtlas2, often a bit more intuitive for small datasets).
+  type: character
+  default: fa
+  values:
+  - umap
+  - fa
+- id: connectivity_cutoff
+  description: Cutoff for the connectivity matrix
+  type: numeric
+  default: 0.05
+  distribution:
+    type: uniform
     lower: 0
     upper: 1
-    default: 0.05
-input:
-  format: hdf5
-  required:
-  - counts
-  optional: groups_id
-output:
-  format: text
-  outputs:
-  - dimred_projection
-  - dimred
-  - timings
-wrapper_type: dimred_projection
-trajectory_types:
-- linear
-- bifurcation
-- convergence
-- multifurcation
-- tree
-topology_inference: free
