@@ -20,10 +20,10 @@ import dynclipy
 #   ____________________________________________________________________________
 #   Load data                                                               ####
 task = dynclipy.main()
-task = dynclipy.main(
-  ["--dataset", "/code/example.h5", "--output", "/mnt/output"],
-  "/code/definition.yml"
-)
+# task = dynclipy.main(
+#   ["--dataset", "/code/example.h5", "--output", "/mnt/output"],
+#   "/code/definition.yml"
+# )
 
 counts = task["counts"]
 
