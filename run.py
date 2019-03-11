@@ -29,8 +29,8 @@ counts = task["counts"]
 
 params = task["params"]
 
-if "groups_id" in data:
-  groups_id = data['groups_id']
+if "groups_id" in task["priors"]:
+  groups_id = task["priors"]['groups_id']
 else:
   groups_id = None
 
