@@ -7,7 +7,7 @@ data <- dyntoy::generate_dataset(
   num_cells = 99,
   num_features = 101,
   model = "tree",
-  normalise = TRUE
+  normalise = FALSE
 )
 params <- list()
 
