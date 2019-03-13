@@ -1,5 +1,8 @@
 #!/usr/local/bin/python
 
+import dynclipy
+task = dynclipy.main()
+
 # avoid errors due to no $DISPLAY environment variable available when running sc.pl.paga
 import matplotlib
 matplotlib.use('Agg')
@@ -15,15 +18,8 @@ import anndata
 import time
 checkpoints = {}
 
-import dynclipy
-
 #   ____________________________________________________________________________
 #   Load data                                                               ####
-task = dynclipy.main()
-# task = dynclipy.main(
-#   ["--dataset", "/code/example.h5", "--output", "/mnt/output"],
-#   "/code/definition.yml"
-# )
 
 counts = task["counts"]
 
