@@ -23,7 +23,7 @@ checkpoints = {}
 
 counts = task["counts"]
 
-params = task["params"]
+parameters = task["parameters"]
 
 if "groups_id" in task["priors"]:
   groups_id = task["priors"]['groups_id']
@@ -52,19 +52,19 @@ else:
   sc.pp.scale(adata)
 
 # precalculating some dimensionality reductions
-sc.tl.pca(adata, n_comps=params["n_comps"])
-sc.pp.neighbors(adata, n_neighbors=params["n_neighbors"])
+sc.tl.pca(adata, n_comps=parameters["n_comps"])
+sc.pp.neighbors(adata, n_neighbors=parameters["n_neighbors"])
 
 # denoise the graph by recomputing it in the first few diffusion components
-if params["n_dcs"] != 0:
-  sc.tl.diffmap(adata, n_comps=params["n_dcs"])
+if parameters["n_dcs"] != 0:
+  sc.tl.diffmap(adata, n_comps=parameters["n_dcs"])
 
 #   ____________________________________________________________________________
 #   Cluster, infer trajectory, infer pseudotime, compute dimension reduction ###
 
 # add grouping if not provided
 if groups_id is None:
-  sc.tl.louvain(adata, resolution=params["resolution"])
+  sc.tl.louvain(adata, resolution=parameters["resolution"])
 
 # run paga
 sc.tl.paga(adata)
@@ -78,7 +78,7 @@ sc.pl.paga(adata, threshold=0.01, layout='fr', show=False)
 
 # run umap for a dimension-reduced embedding, use the positions of the paga
 # graph to initialize this embedding
-if params["embedding_type"] != 'fa':
+if parameters["embedding_type"] != 'fa':
   sc.tl.draw_graph(adata, init_pos='paga')
 else:
   sc.tl.umap(adata, init_pos='paga')
@@ -98,7 +98,7 @@ milestone_network = pd.DataFrame(
   columns=adata.obs.louvain.cat.categories
 ).stack().reset_index()
 milestone_network.columns = ["from", "to", "length"]
-milestone_network = milestone_network.query("length >= " + str(params["connectivity_cutoff"])).reset_index(drop=True)
+milestone_network = milestone_network.query("length >= " + str(parameters["connectivity_cutoff"])).reset_index(drop=True)
 milestone_network["directed"] = False
 
 # dimred

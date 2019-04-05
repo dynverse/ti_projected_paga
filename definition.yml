@@ -1,12 +1,10 @@
 method:
-  id: paga
+  id: projected_paga
   name: Projected PAGA
   tool_id: projected_paga
   source: adaptation
   platform: Python
   url: https://github.com/theislab/graph_abstraction
-
-
 
 wrapper:
   type: branch_trajectory
@@ -21,11 +19,8 @@ wrapper:
   - acyclic_graph
   - graph
   - disconnected_graph
-  input_required:
-  - counts
-  input_optional:
-  - groups_id
-
+  input_required: counts
+  input_optional: groups_id
 
 container:
   docker: dynverse/ti_projected_paga

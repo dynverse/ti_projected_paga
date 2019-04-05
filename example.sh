@@ -3,18 +3,17 @@
 # generate dataset with certain seed
 set.seed(1)
 data <- dyntoy::generate_dataset(
-  id = "specific_example/paga",
+  id = "specific_example/projected_paga",
   num_cells = 99,
   num_features = 101,
   model = "tree",
-  normalise = TRUE
+  normalise = FALSE
 )
-params <- list()
 
 # add method specific args (if needed)
-data$params <- list()
-data$seed <- 1
+data$parameters <- list()
+data$seed <- 1L
 
 # write example dataset to file
 file <- commandArgs(trailingOnly = TRUE)[[1]]
-dynutils::write_h5(data[c("counts", "expression", "params", "prior_information")], file)
+dynutils::write_h5(data, file)
