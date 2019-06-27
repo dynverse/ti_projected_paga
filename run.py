@@ -34,9 +34,9 @@ else:
 if groups_id is not None:
   obs = pd.DataFrame(groups_id)
   obs["louvain"] = obs["group_id"].astype("category")
-  adata = anndata.AnnData(counts.values, obs)
+  adata = anndata.AnnData(counts, obs)
 else:
-  adata = anndata.AnnData(counts.values)
+  adata = anndata.AnnData(counts)
   
 #   ____________________________________________________________________________
 #   Basic preprocessing                                                     ####
@@ -44,12 +44,7 @@ else:
 n_top_genes = min(2000, counts.shape[1])
 
 # normalisation & filtering
-# the recipe_zheng17 only works when > 150 cells because of `np.arange(10, 105, 5)` in filter_genes_dispersion. This should be fixed in the next scanpy release (> 1.2.2) as it is already fixed on github
-if counts.shape[1] >= 150:
-  sc.pp.recipe_zheng17(adata, n_top_genes=n_top_genes)
-else:
-  sc.pp.normalize_per_cell(adata)
-  sc.pp.scale(adata)
+sc.pp.recipe_zheng17(adata, n_top_genes=n_top_genes)
 
 # precalculating some dimensionality reductions
 sc.tl.pca(adata, n_comps=parameters["n_comps"])
@@ -78,10 +73,12 @@ sc.pl.paga(adata, threshold=0.01, layout='fr', show=False)
 
 # run umap for a dimension-reduced embedding, use the positions of the paga
 # graph to initialize this embedding
-if parameters["embedding_type"] != 'fa':
-  sc.tl.draw_graph(adata, init_pos='paga')
-else:
+if parameters["embedding_type"] == 'umap':
   sc.tl.umap(adata, init_pos='paga')
+  dimred_name = 'X_umap'
+else:
+  sc.tl.draw_graph(adata, init_pos='paga')
+  dimred_name = "X_draw_graph_" + parameters["embedding_type"]
 
 checkpoints["method_aftermethod"] = time.time()
 
@@ -102,9 +99,9 @@ milestone_network = milestone_network.query("length >= " + str(parameters["conne
 milestone_network["directed"] = False
 
 # dimred
-dimred = pd.DataFrame([x for x in adata.obsm['X_umap'].T]).T
-dimred.columns = ["comp_" + str(i) for i in range(dimred.shape[1])]
-dimred["cell_id"] = counts.index
+dimred = pd.DataFrame([x for x in adata.obsm[dimred_name].T]).T
+dimred.columns = ["comp_" + str(i+1) for i in range(dimred.shape[1])]
+dimred["cell_id"] = adata.obs.index
 
 # dimred milestones
 dimred_milestones = dimred.copy()
@@ -117,7 +114,7 @@ timings.index.name = "name"
 timings.name = "timings"
 
 # save
-dataset = dynclipy.wrap_data(cell_ids = counts.index)
+dataset = dynclipy.wrap_data(cell_ids = adata.obs.index)
 dataset.add_dimred_projection(
   grouping = grouping, 
   milestone_network = milestone_network,
