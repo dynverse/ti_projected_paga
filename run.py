@@ -89,14 +89,24 @@ checkpoints["method_aftermethod"] = time.time()
 grouping = pd.DataFrame({"cell_id": counts.index, "group_id": adata.obs.louvain})
 
 # milestone network
-milestone_network = pd.DataFrame(
-  np.triu(adata.uns["paga"]["connectivities"].todense(), k = 0),
-  index=adata.obs.louvain.cat.categories,
-  columns=adata.obs.louvain.cat.categories
-).stack().reset_index()
-milestone_network.columns = ["from", "to", "length"]
-milestone_network = milestone_network.query("length >= " + str(parameters["connectivity_cutoff"])).reset_index(drop=True)
-milestone_network["directed"] = False
+if parameters["tree"]:
+  milestone_network = pd.DataFrame(
+    adata.uns["paga"]["connectivities_tree"].todense(),
+    index=adata.obs.louvain.cat.categories,
+    columns=adata.obs.louvain.cat.categories
+  ).stack().reset_index()
+  milestone_network.columns = ["from", "to", "length"]
+  milestone_network = milestone_network.query("length > 0").reset_index(drop=True)
+  milestone_network["directed"] = False
+else:
+  milestone_network = pd.DataFrame(
+    np.triu(adata.uns["paga"]["connectivities"].todense(), k = 0),
+    index=adata.obs.louvain.cat.categories,
+    columns=adata.obs.louvain.cat.categories
+  ).stack().reset_index()
+  milestone_network.columns = ["from", "to", "length"]
+  milestone_network = milestone_network.query("length >= " + str(parameters["connectivity_cutoff"])).reset_index(drop=True)
+  milestone_network["directed"] = False
 
 # dimred
 dimred = pd.DataFrame([x for x in adata.obsm[dimred_name].T]).T
