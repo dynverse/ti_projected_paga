@@ -41,10 +41,13 @@ else:
 #   ____________________________________________________________________________
 #   Basic preprocessing                                                     ####
 
-n_top_genes = min(2000, counts.shape[1])
-
 # normalisation & filtering
-sc.pp.recipe_zheng17(adata, n_top_genes=n_top_genes)
+if counts.shape[1] < 100 and parameters["filter_features"]:
+  print("You have less than 100 features, but the filter_features parameter is true. This will likely result in an error. Disable filter_features to avoid this")
+
+if parameters["filter_features"]:
+  n_top_genes = min(2000, counts.shape[1])
+  sc.pp.recipe_zheng17(adata, n_top_genes=n_top_genes)
 
 # precalculating some dimensionality reductions
 sc.tl.pca(adata, n_comps=parameters["n_comps"])
@@ -90,14 +93,24 @@ checkpoints["method_aftermethod"] = time.time()
 grouping = pd.DataFrame({"cell_id": counts.index, "group_id": adata.obs.louvain})
 
 # milestone network
-milestone_network = pd.DataFrame(
-  np.triu(adata.uns["paga"]["connectivities"].todense(), k = 0),
-  index=adata.obs.louvain.cat.categories,
-  columns=adata.obs.louvain.cat.categories
-).stack().reset_index()
-milestone_network.columns = ["from", "to", "length"]
-milestone_network = milestone_network.query("length >= " + str(parameters["connectivity_cutoff"])).reset_index(drop=True)
-milestone_network["directed"] = False
+if parameters["tree"]:
+  milestone_network = pd.DataFrame(
+    adata.uns["paga"]["connectivities_tree"].todense(),
+    index=adata.obs.louvain.cat.categories,
+    columns=adata.obs.louvain.cat.categories
+  ).stack().reset_index()
+  milestone_network.columns = ["from", "to", "length"]
+  milestone_network = milestone_network.query("length > 0").reset_index(drop=True)
+  milestone_network["directed"] = False
+else:
+  milestone_network = pd.DataFrame(
+    np.triu(adata.uns["paga"]["connectivities"].todense(), k = 0),
+    index=adata.obs.louvain.cat.categories,
+    columns=adata.obs.louvain.cat.categories
+  ).stack().reset_index()
+  milestone_network.columns = ["from", "to", "length"]
+  milestone_network = milestone_network.query("length >= " + str(parameters["connectivity_cutoff"])).reset_index(drop=True)
+  milestone_network["directed"] = False
 
 # dimred
 dimred = pd.DataFrame([x for x in adata.obsm[dimred_name].T]).T

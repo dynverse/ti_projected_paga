@@ -33,6 +33,10 @@ manuscript:
 
 
 parameters:
+- id: filter_features
+  description: Whether to do feature filtering
+  type: logical
+  default: yes
 - id: n_neighbors
   description: Number of neighbours for knn
   type: integer
@@ -74,8 +78,12 @@ parameters:
   values:
   - umap
   - fa
+- id: tree
+  description: Whether a minimum spanning tree should be inferred
+  type: logical
+  default: yes
 - id: connectivity_cutoff
-  description: Cutoff for the connectivity matrix
+  description: Cutoff for the connectivity matrix, only useful of tree is FALSE
   type: numeric
   default: 0.05
   distribution:
